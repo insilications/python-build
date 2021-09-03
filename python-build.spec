@@ -14,9 +14,11 @@ Requires: python-build-bin = %{version}-%{release}
 Requires: python-build-python = %{version}-%{release}
 Requires: python-build-python3 = %{version}-%{release}
 BuildRequires : buildreq-distutils3
+BuildRequires : pep517
 BuildRequires : pluggy
 BuildRequires : py-python
 BuildRequires : pytest
+BuildRequires : python-build
 BuildRequires : tox
 BuildRequires : virtualenv
 
@@ -65,7 +67,7 @@ unset https_proxy
 unset no_proxy
 export SSL_CERT_FILE=/var/cache/ca-certs/anchors/ca-certificates.crt
 export LANG=C.UTF-8
-export SOURCE_DATE_EPOCH=1620015783
+export SOURCE_DATE_EPOCH=1620016744
 export GCC_IGNORE_WERROR=1
 export AR=gcc-ar
 export RANLIB=gcc-ranlib
@@ -75,12 +77,19 @@ export FCFLAGS="$FFLAGS -O3 -ffat-lto-objects -flto=16 "
 export FFLAGS="$FFLAGS -O3 -ffat-lto-objects -flto=16 "
 export CXXFLAGS="$CXXFLAGS -O3 -ffat-lto-objects -flto=16 "
 export MAKEFLAGS=%{?_smp_mflags}
+if [ ! -f setup.py ]; then
+python3 -m build
+else
 python3 setup.py build
-
+fi
 %install
 export MAKEFLAGS=%{?_smp_mflags}
 rm -rf %{buildroot}
+if [ ! -f setup.py ]; then
+python3 -m build  install --root=%{buildroot}
+else
 python3 -tt setup.py build  install --root=%{buildroot}
+fi
 echo ----[ mark ]----
 cat %{buildroot}/usr/lib/python3*/site-packages/*/requires.txt || :
 echo ----[ mark ]----
